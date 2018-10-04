@@ -1,2 +1,2 @@
-# PictureMeThis AYYEEEEE
+# PictureMeThis
 Re-creates an image by using colored characters. The characters collectively create a message.

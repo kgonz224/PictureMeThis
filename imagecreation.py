@@ -27,7 +27,7 @@ def createImg():
                 new_pixels.append(p)  # else, keep black pixel
         letter.putdata(new_pixels)  # copies pixel data into character
         letter.save("Transparent "+x+".png", "PNG")  # save transparent character
-
+#HELLOOOOOOOOOOOOOOOOOOOOO
     background = Image.open('moon.jpg')
 
     width, height = background.size

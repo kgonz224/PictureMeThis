@@ -7,3 +7,7 @@
 
 #Fonts
 *.ttf
+
+#vi
+*.swp
+

@@ -1,0 +1,9 @@
+#Ignore Files
+
+#IMG
+*.png
+*.jpg
+*.jpeg
+
+#Fonts
+*.ttf

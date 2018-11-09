@@ -10,7 +10,7 @@ def createImg():
 
 #Letter creation(Dimensions, msg, font)
     for x in msg:  # create a black and white image for each character; x => letter
-        #ForL : it was the only way to center the character, other options were not working properly
+        #For L: it was the only way to center the character, other options were not working properly
         mask = myFont.getmask(x)
         mask_w, mask_h = mask.size #Letter size
         W,H = mask_w + 2, mask_h + 2 #FIXME:W,H should be largest mask created Execption on space

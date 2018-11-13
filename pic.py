@@ -1,59 +1,73 @@
 from PIL import Image, ImageDraw, ImageFont
 
-def createImg():
+msg = "The quick brown fox jumps over the LAZY dog! Meghan!!!!! <3"
+fontSize = 15
 
-    msg = "The quick brown fox jumps over the LAZY dog!"
-    fontSize = 10
+myFont = ImageFont.truetype('FreeMonoBold.ttf', fontSize) #user
 
-    myFont = ImageFont.truetype('LucidaTypewriterBold.ttf', fontSize) #user
-
-
+def createCharacter(msg, font):
+    charWidth = 0
+    charHeight = 0
+    masks = []
 #Letter creation(Dimensions, msg, font)
-    for x in msg:  # create a black and white image for each character; x => letter
-        #For L: it was the only way to center the character, other options were not working properly
-        mask = myFont.getmask(x)
-        mask_w, mask_h = mask.size #Letter size
-        W,H = mask_w + 2, mask_h + 2 #FIXME:W,H should be largest mask created Execption on space
-        letter = Image.new("L", (W,H)) # grayscale image, had to draw bitmap
-        d = Image.core.draw(letter.im, 0)
-        d.draw_bitmap(((W - mask_w)/2, (H - mask_h)/2), mask, 255)  # 255 is pixel intensity of text
-        letter.save(x+'.png')
+    for char in msg:  # create a black and white image for each character; x => letter
+        mask = font.getmask(char)
+        masks.append(mask)
+        maskWidth, maskHeight = mask.size #Letter size
+        if(maskWidth > charWidth):
+            charWidth = maskWidth
+        if(maskHeight > charHeight):
+            charHeight = maskHeight
 
-        letter = letter.convert("RGBA")  # A is alpha channel, transparency from 0.0 (fully transparent) to 1.0
-        pixels = letter.getdata()  # array of pixel data of character
-        new_pixels = []  # new array for transparent character
+    #L -> Gray Scale
+    charIcon = Image.new("L", (charWidth, charHeight))
+    char = 0
+    for mask in masks:
+        charIcon = Image.new("L", (charWidth, charHeight))
+        maskWidth, maskHeight = mask.size
+        bitMap = Image.core.draw(charIcon.im, 0)
+        bitMap.draw_bitmap(((charWidth - maskWidth) / 2, 
+                            (charHeight - maskHeight) / 2), mask, 255)
+        charIcon.save("test.png", "PNG")
+
+        charIcon = charIcon.convert("RGBA")  # A is alpha channel, transparency from 0.0 (fully transparent) to 1.0
+        pixels = charIcon.getdata()  # array of pixel data of character
+        styledPixels = []  # new array for transparent character
 
         for p in pixels:
             if p[0] != 0 and p[1] != 0 and p[2] != 0:  # if pixel is not black
-                new_pixels.append((255, 255, 255, 0))  # new pixel, white, transparent
+                styledPixels.append((255, 255, 255, 0))  # new pixel, white, transparent
             else:
-                new_pixels.append(p)  # else, keep black pixel
-        letter.putdata(new_pixels)  # copies pixel data into character
-        letter.save("Transparent "+x+".png", "PNG")  # save transparent character
+                styledPixels.append(p)  # else, keep black pixel
+        charIcon.putdata(styledPixels)  # copies pixel data into character
+        charIcon.save(msg[char] + ".png", "PNG")  # save transparent character
 
-    background = Image.open('landscape.jpg')
+        char += 1
+        charIcon = charIcon.convert("L")
+    return (charWidth, charHeight)
 
-    width, height = background.size
+charWidth, charHeight = createCharacter(msg, myFont)
 
-    v_position = 0
-    letter_index = 0
-    msg_length = len(msg)
-    columns = width/W
-    rows = height/H
+background = Image.open('SnowLeopard.png')
 
-    for r in range(0, int(round(rows))):
-        h_position = 0
-        for c in range(0, int(round(columns))):
-            if letter_index == msg_length:
-                letter_index = 0
+width, height = background.size
 
-            foreground = Image.open("Transparent "+msg[letter_index]+".png")
-            background.paste(foreground, (h_position, v_position), foreground)
-            h_position = h_position + W
-            letter_index = letter_index + 1
-        v_position = v_position + H
+v_position = 0
+letter_index = 0
+msg_length = len(msg)
+columns = width/charWidth
+rows = height/charHeight
 
-    background.save('result.png')
+for r in range(0, int(round(rows))):
+    h_position = 0
+    for c in range(0, int(round(columns))):
+        if letter_index == msg_length:
+            letter_index = 0
 
+        foreground = Image.open(msg[letter_index]+".png")
+        background.paste(foreground, (h_position, v_position), foreground)
+        h_position = h_position + charWidth
+        letter_index = letter_index + 1
+    v_position = v_position + charHeight
 
-createImg()
+background.save('result.png')

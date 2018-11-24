@@ -99,7 +99,10 @@ def styleCharImgs(charImgs, style, img = None):
                 style: integer representing the style of the characters
                     0: Transparent letters, black background
                     1: Transparent background, black letters
-                    2: Black background, letters take the average color of
+                    2: Transparent letters, opaque black background
+                    3: Opaque black letters, transparent background
+                    4: Outline of letter?
+                    5: Black background, letters take the average color of
                             of the background image (arg 3; img) where the
                             letter will be placed.
                 img: Optional argument needed when style 2 is chosen.
@@ -124,7 +127,7 @@ def styleCharImgs(charImgs, style, img = None):
             pixels = char.getdata()
             for p in pixels:
                 if p[0] != 255 and p[1] != 255 and p[2] != 255:
-                    styledPixels.append((0, 0, 0, 126))
+                    styledPixels.append((0, 0, 0, 255))
                 else:
                     styledPixels.append((0, 0, 0, 0))
 
@@ -132,16 +135,54 @@ def styleCharImgs(charImgs, style, img = None):
 
     elif (style == 1):
         for char in charImgs:
+            styledPixels = []
             pixels = char.getdata()
             for p in pixels:
-                if p[0] != 225 and p[1] != 225 and p[2] != 225:
-                    p = (0, 0, 0, 1)
+                if p[0] != 255 and p[1] != 255 and p[2] != 255:
+                    styledPixels.append((0, 0, 0, 0))
                 else:
-                    p = (p[0], p[1], p[2], 0)
+                    styledPixels.append((0, 0, 0, 255))
 
-            char = char.putdata(pixels)
+            char.putdata(styledPixels)
 
     elif (style == 2):
+        for char in charImgs:
+            styledPixels = []
+            pixels = char.getdata()
+            for p in pixels:
+                if p[0] != 255 and p[1] != 255 and p[2] != 255:
+                    styledPixels.append((0, 0, 0, 126))
+                else:
+                    styledPixels.append((0, 0, 0, 0))
+
+            char.putdata(styledPixels)
+
+    elif (style == 3):
+        for char in charImgs:
+            styledPixels = []
+            pixels = char.getdata()
+            for p in pixels:
+                if p[0] != 255 and p[1] != 255 and p[2] != 255:
+                    styledPixels.append((0, 0, 0, 0))
+                else:
+                    styledPixels.append((0, 0, 0, 126))
+
+            char.putdata(styledPixels)
+
+    elif (style == 4):
+        for char in charImgs:
+            styledPixels = []
+            pixels = char.getdata()
+            for p in pixels:
+                if ((p[0] != 255 and p[1] != 255 and p[2] != 255) or 
+                        (p[0] != 0 and p[1] != 0 and p[2] != 0)):
+                    styledPixels.append((0, 0, 0, 0))
+                else:
+                    styledPixels.append((0, 0, 0, 255))
+
+            char.putdata(styledPixels)
+
+    elif (style == 5):
         if (img == None):
             print ("This style requires the hidden parameter image. This is "
                     "the background\nimage where letters will be places.")

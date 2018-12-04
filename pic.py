@@ -1,31 +1,27 @@
 
 from PIL import Image, ImageDraw, ImageFont
-import CharImg, ImgPlacement
+import CharImg, ImgPlacement, MessageCheck, sys
 
-msg = "DRMONIQUEROSS"
-fontSize = 45
-#small 25 a.jpg
-#medium 35 on a.jpg 
-#Large 45 on a
-#Make spaces transparent
-#Fix border: a) test letter overflow (First letter MUST BE whole)
-#            b) If disgusting center letters
-#bad words
-style = 2
-image = Image.open("a.jpg")
-myFont = ImageFont.truetype('FreeMonoBold.ttf', fontSize) #user
+# request variables
+imgName = sys.argv[1]       # string i.e. "myimage.jpg"
+imageStyle = sys.argv[2]    # string i.e. "2"
+msg = sys.argv[3]           # string i.e. "DRMONIQUEROSS"
+font = sys.argv[4]          # string i.e. "FreeMonoBold.ttf"
+fontSize = sys.argv[5]      # string i.e. "45"
+
+#test for illegal words
+msg = MessageCheck.prepMsg(msg)
+if(MessageCheck.illegalWords(msg)):
+    print "error.png"
+    sys.quit("There is an invalid word in your message. Try again ;)")
+
+style = int(imageStyle)
+image = Image.open(imgName)
+myFont = ImageFont.truetype(font, CharImg.getFontSize(image, fontSize))
 
 (charWidth, charHeight), charImgs = CharImg.createCharacterImgs(msg, myFont)
 charImgs = CharImg.styleCharImgs(charImgs, style)
 final = ImgPlacement.charOnImg(charImgs, image)
 
 final.save('result.png')
-
-image = Image.open("rainbow.jpg")
-(charWidth, charHeight), charImgs = CharImg.createCharacterImgs(msg, myFont)
-charImgs = CharImg.styleCharImgs(charImgs, style)
-final = ImgPlacement.charOnImg(charImgs, image)
-final.save('result2.png')
-
-
-
+print "result.png"

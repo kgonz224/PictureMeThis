@@ -1,9 +1,9 @@
 '''
 crateCharacterImgs (String msg, Font font)
 createCharImgs ((int charWidth, int charHeight), mask list charImg)
-createMasks (string msg, Font font)
+createMasks (String msg, Font font)
+getFontSize (Image img, String size)
 styleCharImg (Image list charImgs, int style, *(Image img))
-
 '''
 
 from PIL import Image, ImageDraw, ImageFont
@@ -48,8 +48,8 @@ def createCharImg ((charWidth, charHeight), charImg):
 
     index = 0
     for mask in charImg:
-        charIcon = Image.new("L", (charWidth, charHeight))
         maskWidth, maskHeight = mask.size
+        charIcon = Image.new("L", (maskWidth, charHeight))
         bitMap = Image.core.draw(charIcon.im, 0)
         bitMap.draw_bitmap(((charWidth - maskWidth) / 2,
                             (charHeight - maskHeight) / 2), mask, 255)
@@ -74,7 +74,7 @@ def createMasks(msg, font):
             list of masks, each mask corresponding with every char in msg
                 in that order.
     '''
-
+    vertPadding = 2
     charWidth = 0
     charHeight = 0
     masks = []
@@ -86,9 +86,45 @@ def createMasks(msg, font):
         if(maskWidth > charWidth):
             charWidth = maskWidth
         if(maskHeight > charHeight):
-            charHeight = maskHeight
+            charHeight = maskHeight + vertPadding
 
     return ((charWidth, charHeight), masks)
+
+def getFontSize(img, size):
+    ''' getFontSize(Image img, String size)
+        Authors: Kevin Gonzalez
+        Version: 1.0
+        Date: 12/3/2018
+        Args: Image to get dimensions
+              size to calculate font size: Small, Medium, Large
+
+        return int fontSize
+    '''
+    minSize = 13
+    conversionArea = 2050
+    fontSize = 0
+    imgWidth, imgHeight = img.size
+
+    if (size == "Small"):
+        fontSize = (25 * imgWidth)//conversionArea
+        if (fontSize < minSize):
+            fontSize = minSize
+
+    elif (size == "Medium"):
+        fontSize = (35 * imgWidth)//conversionArea
+        if (fontSize < minSize):
+            fontSize = minSize + 1
+
+    elif (size == "Large"):
+        fontSize = (45 * imgWidth)//conversionArea
+        if (fontSize < minSize):
+            fontSize = minSize + 2
+
+    else:
+        print "Invalid size; Try 'Small', 'Medium', 'Large'"
+
+    return fontSize
+
 
 def styleCharImgs(charImgs, style, img = None):
     ''' styleCharImg(Image list charImgs, int style, *(Image img))
@@ -101,10 +137,14 @@ def styleCharImgs(charImgs, style, img = None):
                     1: Transparent background, black letters
                     2: Transparent letters, opaque black background
                     3: Opaque black letters, transparent background
-                    4: Outline of letter?
-                    5: Black background, letters take the average color of
+                    4: Outline of letter?                           FIXME
+                    5: Background is sketched into the image
+                    6: Letters sketched into the image
+                    6: Black background, letters take the average color of
                             of the background image (arg 3; img) where the
-                            letter will be placed.
+                            letter will be placed.                  FIXME
+
+                msg: message
                 img: Optional argument needed when style 2 is chosen.
                     This is the background image where the letters will be
                     placed
@@ -118,7 +158,7 @@ def styleCharImgs(charImgs, style, img = None):
                 charImgs => letter is white and background is black.
     '''
     minStyle = 0
-    maxStyle = 2
+    maxStyle = 6
     styledPixels= []
 
     if (style == 0):
@@ -150,11 +190,11 @@ def styleCharImgs(charImgs, style, img = None):
             styledPixels = []
             pixels = char.getdata()
             for p in pixels:
-                if p[0] != 255 and p[1] != 255 and p[2] != 255:
+                if p[0] != 255 and p[1] != 255 and p[2] != 225:
                     styledPixels.append((0, 0, 0, 126))
                 else:
                     styledPixels.append((0, 0, 0, 0))
-
+            
             char.putdata(styledPixels)
 
     elif (style == 3):
@@ -175,14 +215,59 @@ def styleCharImgs(charImgs, style, img = None):
             pixels = char.getdata()
             for p in pixels:
                 if ((p[0] != 255 and p[1] != 255 and p[2] != 255) or 
-                        (p[0] != 0 and p[1] != 0 and p[2] != 0)):
+                    (p[0] != 0 and p[1] != 0 and p[2] != 0)):
+                
                     styledPixels.append((0, 0, 0, 0))
                 else:
                     styledPixels.append((0, 0, 0, 255))
 
             char.putdata(styledPixels)
 
-    elif (style == 5):
+    elif(style == 5):
+        pNum = 0
+        row = 0
+        charW, charH = charImgs[0].size
+        for char in charImgs:
+            styledPixels = []
+            pixels = char.getdata()
+            for p in pixels:
+                if p[0] != 255 and p[1] != 255 and p[2] != 225:
+                    if(pNum % 2 == 0 or row % 2 == 0):
+                        styledPixels.append((0, 0, 0, 126))
+                    else:
+                        styledPixels.append((0, 0, 0, 0))
+                    pNum += 1
+                    if (pNum > charW):
+                        pNum = pNum - charW
+                        row += 1
+                else:
+                    styledPixels.append((0, 0, 0, 0))
+
+            char.putdata(styledPixels)
+
+    elif(style == 6): 
+        pNum = 0
+        row = 0
+        charW, charH = charImgs[0].size
+        for char in charImgs:
+            styledPixels = []
+            pixels = char.getdata()
+            for p in pixels:
+                if p[0] != 255 and p[1] != 255 and p[2] != 225:
+                    styledPixels.append((0, 0, 0, 0))
+                else:
+                    if(pNum % 2 == 0 or row % 2 == 0):
+                        styledPixels.append((0, 0, 0, 126))
+                    else:
+                        styledPixels.append((0, 0, 0, 0))
+                    pNum += 1
+                    if (pNum > charW):
+                        pNum = pNum - charW
+                        row += 1
+
+            char.putdata(styledPixels)
+
+    elif (style == 7):
         if (img == None):
             print ("This style requires the hidden parameter image. This is "
                     "the background\nimage where letters will be places.")
